@@ -1,0 +1,224 @@
+[
+    {
+        "table_name": "FTE_Master_Data__Q1__FY26_30_Jun_Base_Data_Utilization",
+        "fiscal_year": "FY26",
+        "quarter": "Q1",
+        "extraction_date": "2025-12-26 16:15:09",
+        "metrics": {
+            "total_billable_fte": {
+                "total": 21093.46,
+                "by_business": {
+                    "BET NA": 3395.46,
+                    "HIL": 2699.11,
+                    "GROWTH MARKETS": 4660.62,
+                    "PLATINUM AC-CITI": 4017.85,
+                    "PLATINUM AC-JPMC": 1117.76,
+                    "TIME": 5202.65
+                }
+            },
+            "total_kpo_fte": {
+                "total": 1676.95,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.0,
+                    "PLATINUM AC-CITI": 0.05,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 1676.91
+                }
+            },
+            "total_onsite_fte": {
+                "total": 4918.44,
+                "by_business": {
+                    "BET NA": 1131.1,
+                    "HIL": 685.1,
+                    "GROWTH MARKETS": 1140.22,
+                    "PLATINUM AC-CITI": 802.94,
+                    "PLATINUM AC-JPMC": 418.98,
+                    "TIME": 740.1
+                }
+            },
+            "onsite_kpo_fte": {
+                "total": 0.0,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.0,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 0.0
+                }
+            },
+            "total_offshore_fte": {
+                "total": 16175.02,
+                "by_business": {
+                    "BET NA": 2264.36,
+                    "HIL": 2014.01,
+                    "GROWTH MARKETS": 3520.41,
+                    "PLATINUM AC-CITI": 3214.91,
+                    "PLATINUM AC-JPMC": 698.77,
+                    "TIME": 4462.56
+                }
+            },
+            "offshore_kpo_fte": {
+                "total": 1676.95,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.0,
+                    "PLATINUM AC-CITI": 0.05,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 1676.91
+                }
+            }
+        }
+    },
+    {
+        "table_name": "FTE_Master_Data__Q2_FY26__30_Sep_Base_Data_Utilization",
+        "fiscal_year": "FY26",
+        "quarter": "Q2",
+        "extraction_date": "2025-12-26 16:15:09",
+        "metrics": {
+            "total_billable_fte": {
+                "total": 22086.97,
+                "by_business": {
+                    "BET NA": 3565.79,
+                    "HIL": 2850.62,
+                    "GROWTH MARKETS": 4690.9,
+                    "PLATINUM AC-CITI": 3907.4,
+                    "PLATINUM AC-JPMC": 1524.36,
+                    "TIME": 5547.91
+                }
+            },
+            "total_kpo_fte": {
+                "total": 2105.18,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.33,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 2104.85
+                }
+            },
+            "total_onsite_fte": {
+                "total": 5058.68,
+                "by_business": {
+                    "BET NA": 1182.28,
+                    "HIL": 732.76,
+                    "GROWTH MARKETS": 1148.09,
+                    "PLATINUM AC-CITI": 792.23,
+                    "PLATINUM AC-JPMC": 466.88,
+                    "TIME": 736.44
+                }
+            },
+            "onsite_kpo_fte": {
+                "total": 0.0,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.0,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 0.0
+                }
+            },
+            "total_offshore_fte": {
+                "total": 17028.28,
+                "by_business": {
+                    "BET NA": 2383.51,
+                    "HIL": 2117.86,
+                    "GROWTH MARKETS": 3542.8,
+                    "PLATINUM AC-CITI": 3115.17,
+                    "PLATINUM AC-JPMC": 1057.48,
+                    "TIME": 4811.47
+                }
+            },
+            "offshore_kpo_fte": {
+                "total": 2105.18,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.33,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 2104.85
+                }
+            }
+        }
+    },
+    {
+        "table_name": "FTE_Master_Data__Q3_FY26_6_Oct_Base_Data_Utilization",
+        "fiscal_year": "FY26",
+        "quarter": "Q3",
+        "extraction_date": "2025-12-26 16:15:09",
+        "metrics": {
+            "total_billable_fte": {
+                "total": 21680.76,
+                "by_business": {
+                    "BET NA": 3570.2,
+                    "HIL": 2746.23,
+                    "GROWTH MARKETS": 4319.65,
+                    "PLATINUM AC-CITI": 3710.55,
+                    "PLATINUM AC-JPMC": 1852.48,
+                    "TIME": 5481.65
+                }
+            },
+            "total_kpo_fte": {
+                "total": 2148.24,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 1.0,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 2147.24
+                }
+            },
+            "total_onsite_fte": {
+                "total": 4948.27,
+                "by_business": {
+                    "BET NA": 1135.7,
+                    "HIL": 717.4,
+                    "GROWTH MARKETS": 1089.64,
+                    "PLATINUM AC-CITI": 763.92,
+                    "PLATINUM AC-JPMC": 514.84,
+                    "TIME": 726.77
+                }
+            },
+            "onsite_kpo_fte": {
+                "total": 0.0,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 0.0,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 0.0
+                }
+            },
+            "total_offshore_fte": {
+                "total": 16732.49,
+                "by_business": {
+                    "BET NA": 2434.5,
+                    "HIL": 2028.83,
+                    "GROWTH MARKETS": 3230.02,
+                    "PLATINUM AC-CITI": 2946.63,
+                    "PLATINUM AC-JPMC": 1337.64,
+                    "TIME": 4754.88
+                }
+            },
+            "offshore_kpo_fte": {
+                "total": 2148.24,
+                "by_business": {
+                    "BET NA": 0.0,
+                    "HIL": 0.0,
+                    "GROWTH MARKETS": 1.0,
+                    "PLATINUM AC-CITI": 0.0,
+                    "PLATINUM AC-JPMC": 0.0,
+                    "TIME": 2147.24
+                }
+            }
+        }
+    }
+]
