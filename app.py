@@ -52,9 +52,9 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 
-@st.cache_data
+@st.cache_data(ttl=10)  # Cache for only 10 seconds to ensure fresh data
 def load_data(json_path: str) -> List[Dict[str, Any]]:
-    """Load and cache JSON data."""
+    """Load and cache JSON data with short TTL for fresh updates."""
     with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -70,20 +70,35 @@ def create_quarter_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.Da
         if metric_type == 'hc':
             total_key = 'total_billable_hc'
             kpo_key = 'total_kpo_hc'
+            non_kpo_key = 'total_non_kpo_hc'
             onsite_key = 'total_onsite_hc'
+            onsite_kpo_key = 'onsite_kpo_hc'
+            onsite_non_kpo_key = 'onsite_non_kpo_hc'
             offshore_key = 'total_offshore_hc'
+            offshore_kpo_key = 'offshore_kpo_hc'
+            offshore_non_kpo_key = 'offshore_non_kpo_hc'
         else:
             total_key = 'total_billable_fte'
             kpo_key = 'total_kpo_fte'
+            non_kpo_key = 'total_non_kpo_fte'
             onsite_key = 'total_onsite_fte'
+            onsite_kpo_key = 'onsite_kpo_fte'
+            onsite_non_kpo_key = 'onsite_non_kpo_fte'
             offshore_key = 'total_offshore_fte'
+            offshore_kpo_key = 'offshore_kpo_fte'
+            offshore_non_kpo_key = 'offshore_non_kpo_fte'
         
         records.append({
             'Quarter': quarter,
             'Total': metrics[total_key]['total'],
             'KPO': metrics[kpo_key]['total'],
+            'Non-KPO': metrics[non_kpo_key]['total'],
             'Onsite': metrics[onsite_key]['total'],
-            'Offshore': metrics[offshore_key]['total']
+            'Onsite_KPO': metrics[onsite_kpo_key]['total'],
+            'Onsite_Non_KPO': metrics[onsite_non_kpo_key]['total'],
+            'Offshore': metrics[offshore_key]['total'],
+            'Offshore_KPO': metrics[offshore_kpo_key]['total'],
+            'Offshore_Non_KPO': metrics[offshore_non_kpo_key]['total']
         })
     
     return pd.DataFrame(records)
@@ -150,11 +165,12 @@ def plot_quarter_trends(df: pd.DataFrame, title: str, metric_type: str = 'HC'):
     colors = {
         'Total': '#1f77b4',
         'KPO': '#ff7f0e',
+        'Non-KPO': '#9467bd',
         'Onsite': '#2ca02c',
         'Offshore': '#d62728'
     }
     
-    for column in ['Total', 'KPO', 'Onsite', 'Offshore']:
+    for column in ['Total', 'KPO', 'Non-KPO', 'Onsite', 'Offshore']:
         fig.add_trace(go.Scatter(
             x=df['Quarter'],
             y=df[column],
@@ -279,6 +295,61 @@ def plot_kpo_percentage(data: List[Dict], metric_type: str = 'hc'):
     return fig
 
 
+def plot_kpo_non_kpo_breakdown(data: List[Dict], metric_type: str = 'hc'):
+    """Create a stacked bar chart showing KPO vs Non-KPO breakdown."""
+    quarters = []
+    kpo_values = []
+    non_kpo_values = []
+    
+    for quarter_data in data:
+        quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
+        metrics = quarter_data['metrics']
+        
+        if metric_type == 'hc':
+            kpo = metrics['total_kpo_hc']['total']
+            non_kpo = metrics['total_non_kpo_hc']['total']
+        else:
+            kpo = metrics['total_kpo_fte']['total']
+            non_kpo = metrics['total_non_kpo_fte']['total']
+        
+        quarters.append(quarter)
+        kpo_values.append(kpo)
+        non_kpo_values.append(non_kpo)
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Bar(
+        x=quarters,
+        y=kpo_values,
+        name='KPO',
+        marker_color='#ff7f0e',
+        text=kpo_values,
+        texttemplate='%{text:.0f}',
+        textposition='inside'
+    ))
+    
+    fig.add_trace(go.Bar(
+        x=quarters,
+        y=non_kpo_values,
+        name='Non-KPO',
+        marker_color='#9467bd',
+        text=non_kpo_values,
+        texttemplate='%{text:.0f}',
+        textposition='inside'
+    ))
+    
+    fig.update_layout(
+        title='KPO vs Non-KPO Distribution',
+        xaxis_title='Quarter',
+        yaxis_title='Count',
+        height=400,
+        barmode='stack',
+        hovermode='x unified'
+    )
+    
+    return fig
+
+
 def plot_onsite_offshore_distribution(df: pd.DataFrame, title: str):
     """Create a stacked area chart for onsite/offshore distribution."""
     fig = go.Figure()
@@ -311,6 +382,65 @@ def plot_onsite_offshore_distribution(df: pd.DataFrame, title: str):
         yaxis_title='Count',
         height=400,
         hovermode='x unified'
+    )
+    
+    return fig
+
+
+def plot_location_kpo_breakdown(df: pd.DataFrame, title: str):
+    """Create a grouped bar chart showing KPO/Non-KPO breakdown by location."""
+    fig = go.Figure()
+    
+    # Onsite KPO
+    fig.add_trace(go.Bar(
+        x=df['Quarter'],
+        y=df['Onsite_KPO'],
+        name='Onsite KPO',
+        marker_color='#ff7f0e',
+        legendgroup='onsite'
+    ))
+    
+    # Onsite Non-KPO
+    fig.add_trace(go.Bar(
+        x=df['Quarter'],
+        y=df['Onsite_Non_KPO'],
+        name='Onsite Non-KPO',
+        marker_color='#2ca02c',
+        legendgroup='onsite'
+    ))
+    
+    # Offshore KPO
+    fig.add_trace(go.Bar(
+        x=df['Quarter'],
+        y=df['Offshore_KPO'],
+        name='Offshore KPO',
+        marker_color='#d62728',
+        legendgroup='offshore'
+    ))
+    
+    # Offshore Non-KPO
+    fig.add_trace(go.Bar(
+        x=df['Quarter'],
+        y=df['Offshore_Non_KPO'],
+        name='Offshore Non-KPO',
+        marker_color='#9467bd',
+        legendgroup='offshore'
+    ))
+    
+    fig.update_layout(
+        title=title,
+        xaxis_title='Quarter',
+        yaxis_title='Count',
+        height=500,
+        barmode='group',
+        hovermode='x unified',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
     )
     
     return fig
@@ -364,21 +494,34 @@ def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
     if metric_type == 'hc':
         total = metrics['total_billable_hc']['total']
         kpo = metrics['total_kpo_hc']['total']
+        non_kpo = metrics['total_non_kpo_hc']['total']
         onsite = metrics['total_onsite_hc']['total']
+        onsite_kpo = metrics['onsite_kpo_hc']['total']
+        onsite_non_kpo = metrics['onsite_non_kpo_hc']['total']
         offshore = metrics['total_offshore_hc']['total']
+        offshore_kpo = metrics['offshore_kpo_hc']['total']
+        offshore_non_kpo = metrics['offshore_non_kpo_hc']['total']
         label = 'HC'
     else:
         total = metrics['total_billable_fte']['total']
         kpo = metrics['total_kpo_fte']['total']
+        non_kpo = metrics['total_non_kpo_fte']['total']
         onsite = metrics['total_onsite_fte']['total']
+        onsite_kpo = metrics['onsite_kpo_fte']['total']
+        onsite_non_kpo = metrics['onsite_non_kpo_fte']['total']
         offshore = metrics['total_offshore_fte']['total']
+        offshore_kpo = metrics['offshore_kpo_fte']['total']
+        offshore_non_kpo = metrics['offshore_non_kpo_fte']['total']
         label = 'FTE'
     
     kpo_pct = (kpo / total * 100) if total > 0 else 0
+    non_kpo_pct = (non_kpo / total * 100) if total > 0 else 0
     onsite_pct = (onsite / total * 100) if total > 0 else 0
     offshore_pct = (offshore / total * 100) if total > 0 else 0
     
-    col1, col2, col3, col4 = st.columns(4)
+    # Row 1: Total, KPO, Non-KPO
+    st.markdown("### 📊 Overall Metrics")
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         st.metric(
@@ -396,16 +539,67 @@ def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
     
     with col3:
         st.metric(
-            label=f"Onsite {label}",
-            value=f"{onsite:,.2f}",
-            delta=f"{onsite_pct:.1f}%"
+            label=f"Non-KPO {label}",
+            value=f"{non_kpo:,.2f}",
+            delta=f"{non_kpo_pct:.1f}%"
         )
     
-    with col4:
+    st.markdown("---")
+    
+    # Row 2: Onsite breakdown
+    st.markdown("### 🏢 Onsite Metrics")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
         st.metric(
-            label=f"Offshore {label}",
+            label=f"Total Onsite {label}",
+            value=f"{onsite:,.2f}",
+            delta=f"{onsite_pct:.1f}% of total"
+        )
+    
+    with col2:
+        onsite_kpo_pct = (onsite_kpo / onsite * 100) if onsite > 0 else 0
+        st.metric(
+            label=f"Onsite KPO {label}",
+            value=f"{onsite_kpo:,.2f}",
+            delta=f"{onsite_kpo_pct:.1f}% of onsite"
+        )
+    
+    with col3:
+        onsite_non_kpo_pct = (onsite_non_kpo / onsite * 100) if onsite > 0 else 0
+        st.metric(
+            label=f"Onsite Non-KPO {label}",
+            value=f"{onsite_non_kpo:,.2f}",
+            delta=f"{onsite_non_kpo_pct:.1f}% of onsite"
+        )
+    
+    st.markdown("---")
+    
+    # Row 3: Offshore breakdown
+    st.markdown("### 🌍 Offshore Metrics")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric(
+            label=f"Total Offshore {label}",
             value=f"{offshore:,.2f}",
-            delta=f"{offshore_pct:.1f}%"
+            delta=f"{offshore_pct:.1f}% of total"
+        )
+    
+    with col2:
+        offshore_kpo_pct = (offshore_kpo / offshore * 100) if offshore > 0 else 0
+        st.metric(
+            label=f"Offshore KPO {label}",
+            value=f"{offshore_kpo:,.2f}",
+            delta=f"{offshore_kpo_pct:.1f}% of offshore"
+        )
+    
+    with col3:
+        offshore_non_kpo_pct = (offshore_non_kpo / offshore * 100) if offshore > 0 else 0
+        st.metric(
+            label=f"Offshore Non-KPO {label}",
+            value=f"{offshore_non_kpo:,.2f}",
+            delta=f"{offshore_non_kpo_pct:.1f}% of offshore"
         )
 
 
@@ -422,6 +616,8 @@ def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
         last_total = last['total_billable_hc']['total']
         first_kpo = first['total_kpo_hc']['total']
         last_kpo = last['total_kpo_hc']['total']
+        first_non_kpo = first['total_non_kpo_hc']['total']
+        last_non_kpo = last['total_non_kpo_hc']['total']
         first_onsite = first['total_onsite_hc']['total']
         last_onsite = last['total_onsite_hc']['total']
         first_offshore = first['total_offshore_hc']['total']
@@ -432,6 +628,8 @@ def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
         last_total = last['total_billable_fte']['total']
         first_kpo = first['total_kpo_fte']['total']
         last_kpo = last['total_kpo_fte']['total']
+        first_non_kpo = first['total_non_kpo_fte']['total']
+        last_non_kpo = last['total_non_kpo_fte']['total']
         first_onsite = first['total_onsite_fte']['total']
         last_onsite = last['total_onsite_fte']['total']
         first_offshore = first['total_offshore_fte']['total']
@@ -440,12 +638,13 @@ def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
     
     total_growth = ((last_total - first_total) / first_total * 100) if first_total > 0 else 0
     kpo_growth = ((last_kpo - first_kpo) / first_kpo * 100) if first_kpo > 0 else 0
+    non_kpo_growth = ((last_non_kpo - first_non_kpo) / first_non_kpo * 100) if first_non_kpo > 0 else 0
     onsite_growth = ((last_onsite - first_onsite) / first_onsite * 100) if first_onsite > 0 else 0
     offshore_growth = ((last_offshore - first_offshore) / first_offshore * 100) if first_offshore > 0 else 0
     
     st.subheader(f"📈 Growth Analysis (Q1 to Q3)")
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         st.metric(
@@ -463,12 +662,19 @@ def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
     
     with col3:
         st.metric(
+            label=f"Non-KPO {label} Growth",
+            value=f"{last_non_kpo:,.2f}",
+            delta=f"{non_kpo_growth:.1f}%"
+        )
+    
+    with col4:
+        st.metric(
             label=f"Onsite {label} Growth",
             value=f"{last_onsite:,.2f}",
             delta=f"{onsite_growth:.1f}%"
         )
     
-    with col4:
+    with col5:
         st.metric(
             label=f"Offshore {label} Growth",
             value=f"{last_offshore:,.2f}",
@@ -721,73 +927,6 @@ def display_fulfillment_metrics_cards(quarter_data: Dict):
         )
 
 
-def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
-    """Display growth metrics between quarters."""
-    if len(data) < 2:
-        return
-    
-    first = data[0]['metrics']
-    last = data[-1]['metrics']
-    
-    if metric_type == 'hc':
-        first_total = first['total_billable_hc']['total']
-        last_total = last['total_billable_hc']['total']
-        first_kpo = first['total_kpo_hc']['total']
-        last_kpo = last['total_kpo_hc']['total']
-        first_onsite = first['total_onsite_hc']['total']
-        last_onsite = last['total_onsite_hc']['total']
-        first_offshore = first['total_offshore_hc']['total']
-        last_offshore = last['total_offshore_hc']['total']
-        label = 'HC'
-    else:
-        first_total = first['total_billable_fte']['total']
-        last_total = last['total_billable_fte']['total']
-        first_kpo = first['total_kpo_fte']['total']
-        last_kpo = last['total_kpo_fte']['total']
-        first_onsite = first['total_onsite_fte']['total']
-        last_onsite = last['total_onsite_fte']['total']
-        first_offshore = first['total_offshore_fte']['total']
-        last_offshore = last['total_offshore_fte']['total']
-        label = 'FTE'
-    
-    total_growth = ((last_total - first_total) / first_total * 100) if first_total > 0 else 0
-    kpo_growth = ((last_kpo - first_kpo) / first_kpo * 100) if first_kpo > 0 else 0
-    onsite_growth = ((last_onsite - first_onsite) / first_onsite * 100) if first_onsite > 0 else 0
-    offshore_growth = ((last_offshore - first_offshore) / first_offshore * 100) if first_offshore > 0 else 0
-    
-    st.subheader(f"📈 Growth Analysis (Q1 to Q3)")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label=f"Total {label} Growth",
-            value=f"{last_total:,.2f}",
-            delta=f"{total_growth:.1f}%"
-        )
-    
-    with col2:
-        st.metric(
-            label=f"KPO {label} Growth",
-            value=f"{last_kpo:,.2f}",
-            delta=f"{kpo_growth:.1f}%"
-        )
-    
-    with col3:
-        st.metric(
-            label=f"Onsite {label} Growth",
-            value=f"{last_onsite:,.2f}",
-            delta=f"{onsite_growth:.1f}%"
-        )
-    
-    with col4:
-        st.metric(
-            label=f"Offshore {label} Growth",
-            value=f"{last_offshore:,.2f}",
-            delta=f"{offshore_growth:.1f}%"
-        )
-
-
 def main():
     """Main Streamlit app."""
     
@@ -801,14 +940,18 @@ def main():
     st.sidebar.title("📌 Dashboard Controls")
     st.sidebar.markdown("---")
     
-    # File paths
-    hc_json_path = r'billable_hc_metrics.json'
-    fte_json_path = r'billable_fte_metrics.json'
-    fulfillment_json_path = r'fulfillment_metrics.json'
+    # File paths - look in parent directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
+    
+    hc_json_path = os.path.join(parent_dir, 'billable_hc_metrics.json')
+    fte_json_path = os.path.join(parent_dir, 'billable_fte_metrics.json')
+    fulfillment_json_path = os.path.join(script_dir, 'fulfillment_metrics.json')
     
     # Check if files exist
     if not os.path.exists(hc_json_path) or not os.path.exists(fte_json_path):
-        st.error("❌ Data files not found. Please ensure `billable_hc_metrics.json` and `billable_fte_metrics.json` are in the same directory.")
+        st.error("❌ Data files not found. Please ensure `billable_hc_metrics.json` and `billable_fte_metrics.json` are available.")
+        st.error(f"Looking for:\n- {hc_json_path}\n- {fte_json_path}")
         return
     
     # Load data
@@ -927,17 +1070,27 @@ def main():
             use_container_width=True
         )
         
-        # Two column layout for additional charts
-        col1, col2 = st.columns(2)
+        # Three column layout for KPO analysis
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             st.plotly_chart(plot_kpo_percentage(data, metric_key), use_container_width=True)
         
         with col2:
+            st.plotly_chart(plot_kpo_non_kpo_breakdown(data, metric_key), use_container_width=True)
+        
+        with col3:
             st.plotly_chart(
                 plot_onsite_offshore_distribution(df_quarters, 'Onsite vs Offshore Distribution'),
                 use_container_width=True
             )
+        
+        # Full width chart for location KPO breakdown
+        st.markdown("### 🌍 Location & KPO/Non-KPO Breakdown")
+        st.plotly_chart(
+            plot_location_kpo_breakdown(df_quarters, 'KPO/Non-KPO Distribution by Location'),
+            use_container_width=True
+        )
         
         st.markdown("---")
         
@@ -1005,7 +1158,7 @@ def main():
                 else:
                     vrtu_row[col] = pivot_df[col].sum()
             
-            # 2. KPO - KPO numbers for each quarter (only for Overall table)
+            # 2. KPO - KPO numbers for each quarter
             kpo_row = {}
             kpo_values_list = []
             
@@ -1023,10 +1176,36 @@ def main():
                     kpo_row['QTD'] = kpo_values_list[-1] - kpo_values_list[-2]
                 else:
                     kpo_row['QTD'] = 0
-            else:
-                # For Onsite/Offshore, KPO row should be 0 or minimal
-                for col in pivot_df.columns:
-                    kpo_row[col] = 0
+            elif table_title == "Onsite":
+                # For Onsite, use onsite_kpo values
+                for quarter_data in data_source:
+                    quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
+                    if metric_key == 'hc':
+                        kpo_val = quarter_data['metrics']['onsite_kpo_hc']['total']
+                    else:
+                        kpo_val = quarter_data['metrics']['onsite_kpo_fte']['total']
+                    kpo_row[quarter] = kpo_val
+                    kpo_values_list.append(kpo_val)
+                
+                if len(kpo_values_list) >= 2:
+                    kpo_row['QTD'] = kpo_values_list[-1] - kpo_values_list[-2]
+                else:
+                    kpo_row['QTD'] = 0
+            elif table_title == "Offshore":
+                # For Offshore, use offshore_kpo values
+                for quarter_data in data_source:
+                    quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
+                    if metric_key == 'hc':
+                        kpo_val = quarter_data['metrics']['offshore_kpo_hc']['total']
+                    else:
+                        kpo_val = quarter_data['metrics']['offshore_kpo_fte']['total']
+                    kpo_row[quarter] = kpo_val
+                    kpo_values_list.append(kpo_val)
+                
+                if len(kpo_values_list) >= 2:
+                    kpo_row['QTD'] = kpo_values_list[-1] - kpo_values_list[-2]
+                else:
+                    kpo_row['QTD'] = 0
             
             # 3. VRTU Excl KPO - Total minus KPO
             vrtu_excl_kpo_row = {}
