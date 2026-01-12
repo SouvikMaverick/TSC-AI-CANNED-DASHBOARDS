@@ -941,18 +941,16 @@ def main():
     st.sidebar.markdown("---")
     
     # File paths - look in parent directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(script_dir)
     
-    hc_json_path = os.path.join(parent_dir, 'billable_hc_metrics.json')
-    fte_json_path = os.path.join(parent_dir, 'billable_fte_metrics.json')
-    fulfillment_json_path = os.path.join(script_dir, 'fulfillment_metrics.json')
+    hc_json_path = r'billable_hc_metrics.json'
+    fte_json_path = r'billable_fte_metrics.json'
+    fulfillment_json_path = r'fulfillment_metrics.json'
     
     # Check if files exist
-    if not os.path.exists(hc_json_path) or not os.path.exists(fte_json_path):
-        st.error("❌ Data files not found. Please ensure `billable_hc_metrics.json` and `billable_fte_metrics.json` are available.")
-        st.error(f"Looking for:\n- {hc_json_path}\n- {fte_json_path}")
-        return
+    # if not os.path.exists(hc_json_path) or not os.path.exists(fte_json_path):
+    #     st.error("❌ Data files not found. Please ensure `billable_hc_metrics.json` and `billable_fte_metrics.json` are available.")
+    #     st.error(f"Looking for:\n- {hc_json_path}\n- {fte_json_path}")
+    #     return
     
     # Load data
     try:
