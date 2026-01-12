@@ -65,7 +65,10 @@ def create_quarter_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.Da
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         if metric_type == 'hc':
             total_key = 'total_billable_hc'
@@ -90,15 +93,15 @@ def create_quarter_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.Da
         
         records.append({
             'Quarter': quarter,
-            'Total': metrics[total_key]['total'],
-            'KPO': metrics[kpo_key]['total'],
-            'Non-KPO': metrics[non_kpo_key]['total'],
-            'Onsite': metrics[onsite_key]['total'],
-            'Onsite_KPO': metrics[onsite_kpo_key]['total'],
-            'Onsite_Non_KPO': metrics[onsite_non_kpo_key]['total'],
-            'Offshore': metrics[offshore_key]['total'],
-            'Offshore_KPO': metrics[offshore_kpo_key]['total'],
-            'Offshore_Non_KPO': metrics[offshore_non_kpo_key]['total']
+            'Total': metrics.get(total_key, {}).get('total', 0),
+            'KPO': metrics.get(kpo_key, {}).get('total', 0),
+            'Non-KPO': metrics.get(non_kpo_key, {}).get('total', 0),
+            'Onsite': metrics.get(onsite_key, {}).get('total', 0),
+            'Onsite_KPO': metrics.get(onsite_kpo_key, {}).get('total', 0),
+            'Onsite_Non_KPO': metrics.get(onsite_non_kpo_key, {}).get('total', 0),
+            'Offshore': metrics.get(offshore_key, {}).get('total', 0),
+            'Offshore_KPO': metrics.get(offshore_kpo_key, {}).get('total', 0),
+            'Offshore_Non_KPO': metrics.get(offshore_non_kpo_key, {}).get('total', 0)
         })
     
     return pd.DataFrame(records)
@@ -111,7 +114,10 @@ def create_business_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.D
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         if metric_type == 'hc':
             total_key = 'total_billable_hc'
@@ -122,7 +128,7 @@ def create_business_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.D
             records.append({
                 'Quarter': quarter,
                 'Business': business,
-                'Total': metrics[total_key]['by_business'][business]
+                'Total': metrics.get(total_key, {}).get('by_business', {}).get(business, 0)
             })
     
     return pd.DataFrame(records)
@@ -135,7 +141,10 @@ def create_location_business_dataframe(data: List[Dict], metric_type: str = 'hc'
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         if metric_type == 'hc':
             if location == 'onsite':
@@ -152,7 +161,7 @@ def create_location_business_dataframe(data: List[Dict], metric_type: str = 'hc'
             records.append({
                 'Quarter': quarter,
                 'Business': business,
-                'Total': metrics[location_key]['by_business'][business]
+                'Total': metrics.get(location_key, {}).get('by_business', {}).get(business, 0)
             })
     
     return pd.DataFrame(records)
@@ -260,14 +269,17 @@ def plot_kpo_percentage(data: List[Dict], metric_type: str = 'hc'):
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         if metric_type == 'hc':
-            total = metrics['total_billable_hc']['total']
-            kpo = metrics['total_kpo_hc']['total']
+            total = metrics.get('total_billable_hc', {}).get('total', 0)
+            kpo = metrics.get('total_kpo_hc', {}).get('total', 0)
         else:
-            total = metrics['total_billable_fte']['total']
-            kpo = metrics['total_kpo_fte']['total']
+            total = metrics.get('total_billable_fte', {}).get('total', 0)
+            kpo = metrics.get('total_kpo_fte', {}).get('total', 0)
         
         kpo_pct = (kpo / total * 100) if total > 0 else 0
         quarters.append(quarter)
@@ -303,14 +315,17 @@ def plot_kpo_non_kpo_breakdown(data: List[Dict], metric_type: str = 'hc'):
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         if metric_type == 'hc':
-            kpo = metrics['total_kpo_hc']['total']
-            non_kpo = metrics['total_non_kpo_hc']['total']
+            kpo = metrics.get('total_kpo_hc', {}).get('total', 0)
+            non_kpo = metrics.get('total_non_kpo_hc', {}).get('total', 0)
         else:
-            kpo = metrics['total_kpo_fte']['total']
-            non_kpo = metrics['total_non_kpo_fte']['total']
+            kpo = metrics.get('total_kpo_fte', {}).get('total', 0)
+            non_kpo = metrics.get('total_non_kpo_fte', {}).get('total', 0)
         
         quarters.append(quarter)
         kpo_values.append(kpo)
@@ -454,10 +469,16 @@ def plot_hc_vs_fte(hc_data: List[Dict], fte_data: List[Dict]):
     
     for i, hc_quarter in enumerate(hc_data):
         if i < len(fte_data):
+            hc_metrics = hc_quarter.get('metrics', {})
+            fte_metrics = fte_data[i].get('metrics', {})
+            
+            if not hc_metrics or not fte_metrics:
+                continue
+            
             quarter = f"{hc_quarter['fiscal_year']} {hc_quarter['quarter']}"
             quarters.append(quarter)
-            hc_totals.append(hc_quarter['metrics']['total_billable_hc']['total'])
-            fte_totals.append(fte_data[i]['metrics']['total_billable_fte']['total'])
+            hc_totals.append(hc_metrics.get('total_billable_hc', {}).get('total', 0))
+            fte_totals.append(fte_metrics.get('total_billable_fte', {}).get('total', 0))
     
     fig = go.Figure()
     
@@ -489,29 +510,33 @@ def plot_hc_vs_fte(hc_data: List[Dict], fte_data: List[Dict]):
 
 def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
     """Display key metrics in card format."""
-    metrics = quarter_data['metrics']
+    metrics = quarter_data.get('metrics', {})
+    
+    if not metrics:
+        st.warning("⚠️ No metrics data available for the selected quarter.")
+        return
     
     if metric_type == 'hc':
-        total = metrics['total_billable_hc']['total']
-        kpo = metrics['total_kpo_hc']['total']
-        non_kpo = metrics['total_non_kpo_hc']['total']
-        onsite = metrics['total_onsite_hc']['total']
-        onsite_kpo = metrics['onsite_kpo_hc']['total']
-        onsite_non_kpo = metrics['onsite_non_kpo_hc']['total']
-        offshore = metrics['total_offshore_hc']['total']
-        offshore_kpo = metrics['offshore_kpo_hc']['total']
-        offshore_non_kpo = metrics['offshore_non_kpo_hc']['total']
+        total = metrics.get('total_billable_hc', {}).get('total', 0)
+        kpo = metrics.get('total_kpo_hc', {}).get('total', 0)
+        non_kpo = metrics.get('total_non_kpo_hc', {}).get('total', 0)
+        onsite = metrics.get('total_onsite_hc', {}).get('total', 0)
+        onsite_kpo = metrics.get('onsite_kpo_hc', {}).get('total', 0)
+        onsite_non_kpo = metrics.get('onsite_non_kpo_hc', {}).get('total', 0)
+        offshore = metrics.get('total_offshore_hc', {}).get('total', 0)
+        offshore_kpo = metrics.get('offshore_kpo_hc', {}).get('total', 0)
+        offshore_non_kpo = metrics.get('offshore_non_kpo_hc', {}).get('total', 0)
         label = 'HC'
     else:
-        total = metrics['total_billable_fte']['total']
-        kpo = metrics['total_kpo_fte']['total']
-        non_kpo = metrics['total_non_kpo_fte']['total']
-        onsite = metrics['total_onsite_fte']['total']
-        onsite_kpo = metrics['onsite_kpo_fte']['total']
-        onsite_non_kpo = metrics['onsite_non_kpo_fte']['total']
-        offshore = metrics['total_offshore_fte']['total']
-        offshore_kpo = metrics['offshore_kpo_fte']['total']
-        offshore_non_kpo = metrics['offshore_non_kpo_fte']['total']
+        total = metrics.get('total_billable_fte', {}).get('total', 0)
+        kpo = metrics.get('total_kpo_fte', {}).get('total', 0)
+        non_kpo = metrics.get('total_non_kpo_fte', {}).get('total', 0)
+        onsite = metrics.get('total_onsite_fte', {}).get('total', 0)
+        onsite_kpo = metrics.get('onsite_kpo_fte', {}).get('total', 0)
+        onsite_non_kpo = metrics.get('onsite_non_kpo_fte', {}).get('total', 0)
+        offshore = metrics.get('total_offshore_fte', {}).get('total', 0)
+        offshore_kpo = metrics.get('offshore_kpo_fte', {}).get('total', 0)
+        offshore_non_kpo = metrics.get('offshore_non_kpo_fte', {}).get('total', 0)
         label = 'FTE'
     
     kpo_pct = (kpo / total * 100) if total > 0 else 0
@@ -608,32 +633,37 @@ def display_growth_metrics(data: List[Dict], metric_type: str = 'hc'):
     if len(data) < 2:
         return
     
-    first = data[0]['metrics']
-    last = data[-1]['metrics']
+    first = data[0].get('metrics', {})
+    last = data[-1].get('metrics', {})
+    
+    # Check if metrics exist
+    if not first or not last:
+        st.warning("⚠️ Unable to calculate growth metrics - missing data")
+        return
     
     if metric_type == 'hc':
-        first_total = first['total_billable_hc']['total']
-        last_total = last['total_billable_hc']['total']
-        first_kpo = first['total_kpo_hc']['total']
-        last_kpo = last['total_kpo_hc']['total']
-        first_non_kpo = first['total_non_kpo_hc']['total']
-        last_non_kpo = last['total_non_kpo_hc']['total']
-        first_onsite = first['total_onsite_hc']['total']
-        last_onsite = last['total_onsite_hc']['total']
-        first_offshore = first['total_offshore_hc']['total']
-        last_offshore = last['total_offshore_hc']['total']
+        first_total = first.get('total_billable_hc', {}).get('total', 0)
+        last_total = last.get('total_billable_hc', {}).get('total', 0)
+        first_kpo = first.get('total_kpo_hc', {}).get('total', 0)
+        last_kpo = last.get('total_kpo_hc', {}).get('total', 0)
+        first_non_kpo = first.get('total_non_kpo_hc', {}).get('total', 0)
+        last_non_kpo = last.get('total_non_kpo_hc', {}).get('total', 0)
+        first_onsite = first.get('total_onsite_hc', {}).get('total', 0)
+        last_onsite = last.get('total_onsite_hc', {}).get('total', 0)
+        first_offshore = first.get('total_offshore_hc', {}).get('total', 0)
+        last_offshore = last.get('total_offshore_hc', {}).get('total', 0)
         label = 'HC'
     else:
-        first_total = first['total_billable_fte']['total']
-        last_total = last['total_billable_fte']['total']
-        first_kpo = first['total_kpo_fte']['total']
-        last_kpo = last['total_kpo_fte']['total']
-        first_non_kpo = first['total_non_kpo_fte']['total']
-        last_non_kpo = last['total_non_kpo_fte']['total']
-        first_onsite = first['total_onsite_fte']['total']
-        last_onsite = last['total_onsite_fte']['total']
-        first_offshore = first['total_offshore_fte']['total']
-        last_offshore = last['total_offshore_fte']['total']
+        first_total = first.get('total_billable_fte', {}).get('total', 0)
+        last_total = last.get('total_billable_fte', {}).get('total', 0)
+        first_kpo = first.get('total_kpo_fte', {}).get('total', 0)
+        last_kpo = last.get('total_kpo_fte', {}).get('total', 0)
+        first_non_kpo = first.get('total_non_kpo_fte', {}).get('total', 0)
+        last_non_kpo = last.get('total_non_kpo_fte', {}).get('total', 0)
+        first_onsite = first.get('total_onsite_fte', {}).get('total', 0)
+        last_onsite = last.get('total_onsite_fte', {}).get('total', 0)
+        first_offshore = first.get('total_offshore_fte', {}).get('total', 0)
+        last_offshore = last.get('total_offshore_fte', {}).get('total', 0)
         label = 'FTE'
     
     total_growth = ((last_total - first_total) / first_total * 100) if first_total > 0 else 0
@@ -688,16 +718,19 @@ def create_fulfillment_dataframe(data: List[Dict]) -> pd.DataFrame:
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         records.append({
             'Quarter': quarter,
-            'Total': metrics['total_demands']['total'],
-            'Filled': metrics['filled_demands']['total'],
-            'Open': metrics['open_demands']['total'],
-            'Cancelled': metrics['cancelled_demands']['total'],
-            'Expired': metrics['expired_demands']['total'],
-            'Fulfillment_Rate': metrics['fulfillment_rate']['overall']
+            'Total': metrics.get('total_demands', {}).get('total', 0),
+            'Filled': metrics.get('filled_demands', {}).get('total', 0),
+            'Open': metrics.get('open_demands', {}).get('total', 0),
+            'Cancelled': metrics.get('cancelled_demands', {}).get('total', 0),
+            'Expired': metrics.get('expired_demands', {}).get('total', 0),
+            'Fulfillment_Rate': metrics.get('fulfillment_rate', {}).get('overall', 0)
         })
     
     return pd.DataFrame(records)
@@ -710,16 +743,19 @@ def create_fulfillment_business_dataframe(data: List[Dict]) -> pd.DataFrame:
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         for business in businesses:
             records.append({
                 'Quarter': quarter,
                 'Business': business,
-                'Total': metrics['total_demands']['by_business'][business],
-                'Filled': metrics['filled_demands']['by_business'][business],
-                'Open': metrics['open_demands']['by_business'][business],
-                'Fulfillment_Rate': metrics['fulfillment_rate']['by_business'][business]
+                'Total': metrics.get('total_demands', {}).get('by_business', {}).get(business, 0),
+                'Filled': metrics.get('filled_demands', {}).get('by_business', {}).get(business, 0),
+                'Open': metrics.get('open_demands', {}).get('by_business', {}).get(business, 0),
+                'Fulfillment_Rate': metrics.get('fulfillment_rate', {}).get('by_business', {}).get(business, 0)
             })
     
     return pd.DataFrame(records)
@@ -732,18 +768,21 @@ def create_fulfillment_location_business_dataframe(data: List[Dict], location: s
     
     for quarter_data in data:
         quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data['metrics']
+        metrics = quarter_data.get('metrics', {})
+        
+        if not metrics:
+            continue
         
         location_key = 'onsite_demands' if location == 'onsite' else 'offshore_demands'
         
         for business in businesses:
-            total_demands = metrics[location_key]['by_business'][business]
+            total_demands = metrics.get(location_key, {}).get('by_business', {}).get(business, 0)
             
             # Calculate filled and open for this location (proportional distribution)
             # We'll use the overall business totals as reference
-            business_total = metrics['total_demands']['by_business'][business]
-            business_filled = metrics['filled_demands']['by_business'][business]
-            business_open = metrics['open_demands']['by_business'][business]
+            business_total = metrics.get('total_demands', {}).get('by_business', {}).get(business, 0)
+            business_filled = metrics.get('filled_demands', {}).get('by_business', {}).get(business, 0)
+            business_open = metrics.get('open_demands', {}).get('by_business', {}).get(business, 0)
             
             # Proportional calculation
             if business_total > 0:
@@ -870,14 +909,18 @@ def plot_fulfillment_business_breakdown(df: pd.DataFrame, quarter: str):
 
 def display_fulfillment_metrics_cards(quarter_data: Dict):
     """Display fulfillment metrics in card format."""
-    metrics = quarter_data['metrics']
+    metrics = quarter_data.get('metrics', {})
     
-    total = metrics['total_demands']['total']
-    filled = metrics['filled_demands']['total']
-    open_count = metrics['open_demands']['total']
-    cancelled = metrics['cancelled_demands']['total']
-    expired = metrics['expired_demands']['total']
-    fulfillment_rate = metrics['fulfillment_rate']['overall']
+    if not metrics:
+        st.warning("⚠️ No fulfillment metrics data available for the selected quarter.")
+        return
+    
+    total = metrics.get('total_demands', {}).get('total', 0)
+    filled = metrics.get('filled_demands', {}).get('total', 0)
+    open_count = metrics.get('open_demands', {}).get('total', 0)
+    cancelled = metrics.get('cancelled_demands', {}).get('total', 0)
+    expired = metrics.get('expired_demands', {}).get('total', 0)
+    fulfillment_rate = metrics.get('fulfillment_rate', {}).get('overall', 0)
     
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     
@@ -917,8 +960,8 @@ def display_fulfillment_metrics_cards(quarter_data: Dict):
         )
     
     with col6:
-        onsite = metrics['onsite_demands']['total']
-        offshore = metrics['offshore_demands']['total']
+        onsite = metrics.get('onsite_demands', {}).get('total', 0)
+        offshore = metrics.get('offshore_demands', {}).get('total', 0)
         offshore_pct = (offshore / total * 100) if total > 0 else 0
         st.metric(
             label="Offshore %",
@@ -1030,9 +1073,15 @@ def main():
         comparison_records = []
         for i, hc_quarter in enumerate(hc_data):
             if i < len(fte_data):
+                hc_metrics = hc_quarter.get('metrics', {})
+                fte_metrics = fte_data[i].get('metrics', {})
+                
+                if not hc_metrics or not fte_metrics:
+                    continue
+                
                 quarter = f"{hc_quarter['fiscal_year']} {hc_quarter['quarter']}"
-                hc_total = hc_quarter['metrics']['total_billable_hc']['total']
-                fte_total = fte_data[i]['metrics']['total_billable_fte']['total']
+                hc_total = hc_metrics.get('total_billable_hc', {}).get('total', 0)
+                fte_total = fte_metrics.get('total_billable_fte', {}).get('total', 0)
                 diff = hc_total - fte_total
                 pct_diff = (diff / hc_total * 100) if hc_total > 0 else 0
                 
