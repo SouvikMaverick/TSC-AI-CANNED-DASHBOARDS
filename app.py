@@ -569,6 +569,14 @@ def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
             delta=f"{non_kpo_pct:.1f}%"
         )
     
+    # Debug: Show what values were extracted
+    with st.expander("📊 Debug: Metric Values"):
+        st.write(f"**Total**: {total}")
+        st.write(f"**KPO**: {kpo}")
+        st.write(f"**Non-KPO**: {non_kpo}")
+        st.write(f"**KPO + Non-KPO Sum**: {kpo + non_kpo}")
+        st.write(f"**Difference (Total - Sum)**: {total - (kpo + non_kpo)}")
+    
     st.markdown("---")
     
     # Row 2: Onsite breakdown
@@ -983,17 +991,27 @@ def main():
     st.sidebar.title("📌 Dashboard Controls")
     st.sidebar.markdown("---")
     
-    # File paths - look in parent directory
+    # File paths - resolve from workspace root (parent) first, then script directory
+    from pathlib import Path
+    script_dir = Path(__file__).resolve().parent
+    workspace_root = script_dir.parent
     
-    hc_json_path = r'billable_hc_metrics.json'
-    fte_json_path = r'billable_fte_metrics.json'
-    fulfillment_json_path = r'fulfillment_metrics.json'
+    # Try workspace root first (where the complete/correct JSON is), then script directory
+    hc_json_path = workspace_root / 'billable_hc_metrics.json'
+    if not hc_json_path.exists():
+        hc_json_path = script_dir / 'billable_hc_metrics.json'
     
-    # Check if files exist
-    # if not os.path.exists(hc_json_path) or not os.path.exists(fte_json_path):
-    #     st.error("❌ Data files not found. Please ensure `billable_hc_metrics.json` and `billable_fte_metrics.json` are available.")
-    #     st.error(f"Looking for:\n- {hc_json_path}\n- {fte_json_path}")
-    #     return
+    fte_json_path = workspace_root / 'billable_fte_metrics.json'
+    if not fte_json_path.exists():
+        fte_json_path = script_dir / 'billable_fte_metrics.json'
+    
+    fulfillment_json_path = workspace_root / 'fulfillment_metrics.json'
+    if not fulfillment_json_path.exists():
+        fulfillment_json_path = script_dir / 'fulfillment_metrics.json'
+    
+    hc_json_path = str(hc_json_path)
+    fte_json_path = str(fte_json_path)
+    fulfillment_json_path = str(fulfillment_json_path)
     
     # Load data
     try:
@@ -1008,6 +1026,13 @@ def main():
         else:
             st.sidebar.success("✅ HC and FTE data loaded successfully")
             st.sidebar.warning("⚠️ Fulfillment data not found")
+        
+        # Show which files were loaded
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("**📁 Data Files Used:**")
+        st.sidebar.caption(f"HC: {os.path.basename(hc_json_path)}")
+        st.sidebar.caption(f"FTE: {os.path.basename(fte_json_path)}")
+        st.sidebar.caption(f"Fulfillment: {os.path.basename(fulfillment_json_path)}")
     except Exception as e:
         st.error(f"❌ Error loading data: {str(e)}")
         return
