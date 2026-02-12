@@ -3,7 +3,7 @@
         "table_name": "Q1_FY26_Quarterly_Demand_Walk_Base_File",
         "fiscal_year": "FY26",
         "quarter": "Q1",
-        "extraction_date": "2026-02-12 12:36:38",
+        "extraction_date": "2026-02-12 19:06:39",
         "metrics": {
             "total_demands": {
                 "total": 13834,
@@ -137,7 +137,7 @@
         "table_name": "Q2_FY26_Quarterly_Demand_Walk_Base_File",
         "fiscal_year": "FY26",
         "quarter": "Q2",
-        "extraction_date": "2026-02-12 12:36:38",
+        "extraction_date": "2026-02-12 19:06:39",
         "metrics": {
             "total_demands": {
                 "total": 12987,
@@ -281,140 +281,142 @@
         "table_name": "Q3_FY26_Quarterly_Demand_Walk_Base_File",
         "fiscal_year": "FY26",
         "quarter": "Q3",
-        "extraction_date": "2026-02-12 12:36:38",
+        "extraction_date": "2026-02-12 19:06:39",
         "metrics": {
             "total_demands": {
-                "total": 4357,
+                "total": 12741,
                 "by_status": {
-                    "**": 1,
-                    "Cancelled": 111,
-                    "Expired": 1,
-                    "Filled": 137,
-                    "Open": 4107
+                    "Cancelled": 4922,
+                    "Expired": 72,
+                    "Filled": 3353,
+                    "Open": 4394
                 },
                 "by_business": {
-                    "BET NA": 885,
-                    "HIL": 423,
-                    "GROWTH MARKETS": 1103,
-                    "PLATINUM AC-CITI": 124,
-                    "PLATINUM AC-JPMC": 491,
-                    "TIME": 1330
+                    "BET NA": 2281,
+                    "HIL": 1775,
+                    "GROWTH MARKETS": 3527,
+                    "PLATINUM AC-CITI": 200,
+                    "PLATINUM AC-JPMC": 1628,
+                    "TIME": 3330
                 }
             },
             "filled_demands": {
-                "total": 137,
+                "total": 3353,
                 "by_business": {
-                    "BET NA": 21,
-                    "HIL": 20,
-                    "GROWTH MARKETS": 22,
-                    "PLATINUM AC-CITI": 3,
-                    "PLATINUM AC-JPMC": 24,
-                    "TIME": 47
+                    "BET NA": 650,
+                    "HIL": 528,
+                    "GROWTH MARKETS": 727,
+                    "PLATINUM AC-CITI": 37,
+                    "PLATINUM AC-JPMC": 499,
+                    "TIME": 912
                 }
             },
             "open_demands": {
-                "total": 4107,
+                "total": 4394,
                 "by_business": {
-                    "BET NA": 837,
-                    "HIL": 396,
-                    "GROWTH MARKETS": 1066,
-                    "PLATINUM AC-CITI": 115,
-                    "PLATINUM AC-JPMC": 463,
-                    "TIME": 1230
+                    "BET NA": 669,
+                    "HIL": 645,
+                    "GROWTH MARKETS": 1231,
+                    "PLATINUM AC-CITI": 36,
+                    "PLATINUM AC-JPMC": 434,
+                    "TIME": 1379
                 }
             },
             "cancelled_demands": {
-                "total": 111,
+                "total": 4922,
                 "by_business": {
-                    "BET NA": 27,
-                    "HIL": 7,
-                    "GROWTH MARKETS": 15,
-                    "PLATINUM AC-CITI": 6,
-                    "PLATINUM AC-JPMC": 4,
-                    "TIME": 52
+                    "BET NA": 939,
+                    "HIL": 587,
+                    "GROWTH MARKETS": 1554,
+                    "PLATINUM AC-CITI": 125,
+                    "PLATINUM AC-JPMC": 693,
+                    "TIME": 1024
                 }
             },
             "expired_demands": {
-                "total": 1,
+                "total": 72,
                 "by_business": {
-                    "BET NA": 0,
-                    "HIL": 0,
-                    "GROWTH MARKETS": 0,
-                    "PLATINUM AC-CITI": 0,
-                    "PLATINUM AC-JPMC": 0,
-                    "TIME": 1
+                    "BET NA": 23,
+                    "HIL": 15,
+                    "GROWTH MARKETS": 15,
+                    "PLATINUM AC-CITI": 2,
+                    "PLATINUM AC-JPMC": 2,
+                    "TIME": 15
                 }
             },
             "kpo_demands": {
-                "total": 637,
+                "total": 1161,
                 "by_status": {
-                    "Filled": 32,
-                    "Open": 605
+                    "Cancelled": 343,
+                    "Expired": 2,
+                    "Filled": 436,
+                    "Open": 380
                 },
-                "filled": 32,
-                "open": 605,
-                "cancelled": 0,
-                "expired": 0
+                "filled": 436,
+                "open": 380,
+                "cancelled": 343,
+                "expired": 2
             },
             "non_kpo_demands": {
-                "total": 3719,
+                "total": 11580,
                 "by_status": {
-                    "Cancelled": 111,
-                    "Expired": 1,
-                    "Filled": 105,
-                    "Open": 3502
+                    "Cancelled": 4579,
+                    "Expired": 70,
+                    "Filled": 2917,
+                    "Open": 4014
                 },
-                "filled": 105,
-                "open": 3502,
-                "cancelled": 111,
-                "expired": 1
+                "filled": 2917,
+                "open": 4014,
+                "cancelled": 4579,
+                "expired": 70
             },
             "onsite_demands": {
-                "total": 1222,
+                "total": 3579,
                 "by_business": {
-                    "BET NA": 257,
-                    "HIL": 147,
-                    "GROWTH MARKETS": 368,
-                    "PLATINUM AC-CITI": 34,
-                    "PLATINUM AC-JPMC": 262,
-                    "TIME": 154
+                    "BET NA": 723,
+                    "HIL": 596,
+                    "GROWTH MARKETS": 1031,
+                    "PLATINUM AC-CITI": 57,
+                    "PLATINUM AC-JPMC": 739,
+                    "TIME": 433
                 },
                 "by_status": {
-                    "Cancelled": 63,
-                    "Filled": 42,
-                    "Open": 1117
+                    "Cancelled": 1622,
+                    "Expired": 22,
+                    "Filled": 755,
+                    "Open": 1180
                 },
-                "kpo": 0,
-                "non_kpo": 1222
+                "kpo": 3,
+                "non_kpo": 3576
             },
             "offshore_demands": {
-                "total": 3134,
+                "total": 9162,
                 "by_business": {
-                    "BET NA": 628,
-                    "HIL": 276,
-                    "GROWTH MARKETS": 735,
-                    "PLATINUM AC-CITI": 90,
-                    "PLATINUM AC-JPMC": 229,
-                    "TIME": 1176
+                    "BET NA": 1558,
+                    "HIL": 1179,
+                    "GROWTH MARKETS": 2496,
+                    "PLATINUM AC-CITI": 143,
+                    "PLATINUM AC-JPMC": 889,
+                    "TIME": 2897
                 },
                 "by_status": {
-                    "Cancelled": 48,
-                    "Expired": 1,
-                    "Filled": 95,
-                    "Open": 2990
+                    "Cancelled": 3300,
+                    "Expired": 50,
+                    "Filled": 2598,
+                    "Open": 3214
                 },
-                "kpo": 637,
-                "non_kpo": 2497
+                "kpo": 1158,
+                "non_kpo": 8004
             },
             "fulfillment_rate": {
-                "overall": 3.23,
+                "overall": 43.28,
                 "by_business": {
-                    "BET NA": 2.45,
-                    "HIL": 4.81,
-                    "GROWTH MARKETS": 2.02,
-                    "PLATINUM AC-CITI": 2.54,
-                    "PLATINUM AC-JPMC": 4.93,
-                    "TIME": 3.68
+                    "BET NA": 49.28,
+                    "HIL": 45.01,
+                    "GROWTH MARKETS": 37.13,
+                    "PLATINUM AC-CITI": 50.68,
+                    "PLATINUM AC-JPMC": 53.48,
+                    "TIME": 39.81
                 }
             }
         }
@@ -423,7 +425,7 @@
         "table_name": "Q4_FY26_Quarterly_Demand_Walk_Base_File",
         "fiscal_year": "FY26",
         "quarter": "Q4",
-        "extraction_date": "2026-02-12 12:36:38",
+        "extraction_date": "2026-02-12 19:06:39",
         "metrics": {
             "total_demands": {
                 "total": 7050,
