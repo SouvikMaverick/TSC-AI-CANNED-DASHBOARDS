@@ -1,20 +1,16 @@
 """
-COO Dashboard - Billable HC & FTE Metrics Visualization
-A comprehensive Streamlit app for analyzing workforce metrics
+COO Dashboard - Billable HC & FTE Metrics (Tables Only)
+A simplified Streamlit app focused on data tables without charts
 """
-
 import streamlit as st
-import json
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from typing import Dict, Any, List
+import json
 import os
+from typing import Dict, Any, List
 
 # Page configuration
 st.set_page_config(
-    page_title="COO Dashboard - HC & FTE Metrics",
+    page_title="COO Dashboard - HC & FTE Metrics (Tables)",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -57,54 +53,6 @@ def load_data(json_path: str) -> List[Dict[str, Any]]:
     """Load and cache JSON data with short TTL for fresh updates."""
     with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
-
-def create_quarter_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.DataFrame:
-    """Create a consolidated dataframe from all quarters."""
-    records = []
-    
-    for quarter_data in data:
-        quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data.get('metrics', {})
-        
-        if not metrics:
-            continue
-        
-        if metric_type == 'hc':
-            total_key = 'total_billable_hc'
-            kpo_key = 'total_kpo_hc'
-            non_kpo_key = 'total_non_kpo_hc'
-            onsite_key = 'total_onsite_hc'
-            onsite_kpo_key = 'onsite_kpo_hc'
-            onsite_non_kpo_key = 'onsite_non_kpo_hc'
-            offshore_key = 'total_offshore_hc'
-            offshore_kpo_key = 'offshore_kpo_hc'
-            offshore_non_kpo_key = 'offshore_non_kpo_hc'
-        else:
-            total_key = 'total_billable_fte'
-            kpo_key = 'total_kpo_fte'
-            non_kpo_key = 'total_non_kpo_fte'
-            onsite_key = 'total_onsite_fte'
-            onsite_kpo_key = 'onsite_kpo_fte'
-            onsite_non_kpo_key = 'onsite_non_kpo_fte'
-            offshore_key = 'total_offshore_fte'
-            offshore_kpo_key = 'offshore_kpo_fte'
-            offshore_non_kpo_key = 'offshore_non_kpo_fte'
-        
-        records.append({
-            'Quarter': quarter,
-            'Total': metrics.get(total_key, {}).get('total', 0),
-            'KPO': metrics.get(kpo_key, {}).get('total', 0),
-            'Non-KPO': metrics.get(non_kpo_key, {}).get('total', 0),
-            'Onsite': metrics.get(onsite_key, {}).get('total', 0),
-            'Onsite_KPO': metrics.get(onsite_kpo_key, {}).get('total', 0),
-            'Onsite_Non_KPO': metrics.get(onsite_non_kpo_key, {}).get('total', 0),
-            'Offshore': metrics.get(offshore_key, {}).get('total', 0),
-            'Offshore_KPO': metrics.get(offshore_kpo_key, {}).get('total', 0),
-            'Offshore_Non_KPO': metrics.get(offshore_non_kpo_key, {}).get('total', 0)
-        })
-    
-    return pd.DataFrame(records)
 
 
 def create_business_dataframe(data: List[Dict], metric_type: str = 'hc') -> pd.DataFrame:
@@ -167,347 +115,6 @@ def create_location_business_dataframe(data: List[Dict], metric_type: str = 'hc'
     return pd.DataFrame(records)
 
 
-def plot_quarter_trends(df: pd.DataFrame, title: str, metric_type: str = 'HC'):
-    """Create an interactive line chart for quarter-over-quarter trends."""
-    fig = go.Figure()
-    
-    colors = {
-        'Total': '#1f77b4',
-        'KPO': '#ff7f0e',
-        'Non-KPO': '#9467bd',
-        'Onsite': '#2ca02c',
-        'Offshore': '#d62728'
-    }
-    
-    for column in ['Total', 'KPO', 'Non-KPO', 'Onsite', 'Offshore']:
-        fig.add_trace(go.Scatter(
-            x=df['Quarter'],
-            y=df[column],
-            name=column,
-            mode='lines+markers',
-            line=dict(width=3, color=colors[column]),
-            marker=dict(size=10)
-        ))
-    
-    fig.update_layout(
-        title=title,
-        xaxis_title='Quarter',
-        yaxis_title=f'{metric_type} Count',
-        hovermode='x unified',
-        height=500,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
-    )
-    
-    return fig
-
-
-def plot_business_breakdown(df: pd.DataFrame, title: str, metric_type: str = 'HC'):
-    """Create a stacked bar chart for business breakdown."""
-    fig = px.bar(
-        df,
-        x='Quarter',
-        y='Total',
-        color='Business',
-        title=title,
-        labels={'Total': f'{metric_type} Count'},
-        height=500,
-        color_discrete_sequence=px.colors.qualitative.Set3
-    )
-    
-    fig.update_layout(
-        hovermode='x unified',
-        legend=dict(
-            orientation="v",
-            yanchor="top",
-            y=1,
-            xanchor="left",
-            x=1.02
-        )
-    )
-    
-    return fig
-
-
-def plot_business_comparison(df: pd.DataFrame, quarter: str, title: str):
-    """Create a horizontal bar chart comparing businesses."""
-    quarter_data = df[df['Quarter'] == quarter].sort_values('Total', ascending=True)
-    
-    fig = go.Figure(go.Bar(
-        x=quarter_data['Total'],
-        y=quarter_data['Business'],
-        orientation='h',
-        marker=dict(
-            color=quarter_data['Total'],
-            colorscale='Blues',
-            showscale=True
-        ),
-        text=quarter_data['Total'].round(2),
-        textposition='auto',
-    ))
-    
-    fig.update_layout(
-        title=title,
-        xaxis_title='Count',
-        yaxis_title='Business',
-        height=400,
-        showlegend=False
-    )
-    
-    return fig
-
-
-def plot_kpo_percentage(data: List[Dict], metric_type: str = 'hc'):
-    """Create a line chart showing KPO percentage over quarters."""
-    quarters = []
-    kpo_percentages = []
-    
-    for quarter_data in data:
-        quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data.get('metrics', {})
-        
-        if not metrics:
-            continue
-        
-        if metric_type == 'hc':
-            total = metrics.get('total_billable_hc', {}).get('total', 0)
-            kpo = metrics.get('total_kpo_hc', {}).get('total', 0)
-        else:
-            total = metrics.get('total_billable_fte', {}).get('total', 0)
-            kpo = metrics.get('total_kpo_fte', {}).get('total', 0)
-        
-        kpo_pct = (kpo / total * 100) if total > 0 else 0
-        quarters.append(quarter)
-        kpo_percentages.append(kpo_pct)
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=quarters,
-        y=kpo_percentages,
-        mode='lines+markers',
-        line=dict(width=3, color='#ff7f0e'),
-        marker=dict(size=12),
-        fill='tozeroy',
-        fillcolor='rgba(255, 127, 14, 0.2)'
-    ))
-    
-    fig.update_layout(
-        title='KPO Percentage Over Quarters',
-        xaxis_title='Quarter',
-        yaxis_title='KPO %',
-        height=400,
-        hovermode='x'
-    )
-    
-    return fig
-
-
-def plot_kpo_non_kpo_breakdown(data: List[Dict], metric_type: str = 'hc'):
-    """Create a stacked bar chart showing KPO vs Non-KPO breakdown."""
-    quarters = []
-    kpo_values = []
-    non_kpo_values = []
-    
-    for quarter_data in data:
-        quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-        metrics = quarter_data.get('metrics', {})
-        
-        if not metrics:
-            continue
-        
-        if metric_type == 'hc':
-            kpo = metrics.get('total_kpo_hc', {}).get('total', 0)
-            non_kpo = metrics.get('total_non_kpo_hc', {}).get('total', 0)
-        else:
-            kpo = metrics.get('total_kpo_fte', {}).get('total', 0)
-            non_kpo = metrics.get('total_non_kpo_fte', {}).get('total', 0)
-        
-        quarters.append(quarter)
-        kpo_values.append(kpo)
-        non_kpo_values.append(non_kpo)
-    
-    fig = go.Figure()
-    
-    fig.add_trace(go.Bar(
-        x=quarters,
-        y=kpo_values,
-        name='KPO',
-        marker_color='#ff7f0e',
-        text=kpo_values,
-        texttemplate='%{text:.0f}',
-        textposition='inside'
-    ))
-    
-    fig.add_trace(go.Bar(
-        x=quarters,
-        y=non_kpo_values,
-        name='Non-KPO',
-        marker_color='#9467bd',
-        text=non_kpo_values,
-        texttemplate='%{text:.0f}',
-        textposition='inside'
-    ))
-    
-    fig.update_layout(
-        title='KPO vs Non-KPO Distribution',
-        xaxis_title='Quarter',
-        yaxis_title='Count',
-        height=400,
-        barmode='stack',
-        hovermode='x unified'
-    )
-    
-    return fig
-
-
-def plot_onsite_offshore_distribution(df: pd.DataFrame, title: str):
-    """Create a stacked area chart for onsite/offshore distribution."""
-    fig = go.Figure()
-    
-    fig.add_trace(go.Scatter(
-        x=df['Quarter'],
-        y=df['Onsite'],
-        name='Onsite',
-        mode='lines',
-        line=dict(width=0),
-        fillcolor='rgba(44, 160, 44, 0.5)',
-        fill='tozeroy',
-        stackgroup='one'
-    ))
-    
-    fig.add_trace(go.Scatter(
-        x=df['Quarter'],
-        y=df['Offshore'],
-        name='Offshore',
-        mode='lines',
-        line=dict(width=0),
-        fillcolor='rgba(214, 39, 40, 0.5)',
-        fill='tonexty',
-        stackgroup='one'
-    ))
-    
-    fig.update_layout(
-        title=title,
-        xaxis_title='Quarter',
-        yaxis_title='Count',
-        height=400,
-        hovermode='x unified'
-    )
-    
-    return fig
-
-
-def plot_location_kpo_breakdown(df: pd.DataFrame, title: str):
-    """Create a grouped bar chart showing KPO/Non-KPO breakdown by location."""
-    fig = go.Figure()
-    
-    # Onsite KPO
-    fig.add_trace(go.Bar(
-        x=df['Quarter'],
-        y=df['Onsite_KPO'],
-        name='Onsite KPO',
-        marker_color='#ff7f0e',
-        legendgroup='onsite'
-    ))
-    
-    # Onsite Non-KPO
-    fig.add_trace(go.Bar(
-        x=df['Quarter'],
-        y=df['Onsite_Non_KPO'],
-        name='Onsite Non-KPO',
-        marker_color='#2ca02c',
-        legendgroup='onsite'
-    ))
-    
-    # Offshore KPO
-    fig.add_trace(go.Bar(
-        x=df['Quarter'],
-        y=df['Offshore_KPO'],
-        name='Offshore KPO',
-        marker_color='#d62728',
-        legendgroup='offshore'
-    ))
-    
-    # Offshore Non-KPO
-    fig.add_trace(go.Bar(
-        x=df['Quarter'],
-        y=df['Offshore_Non_KPO'],
-        name='Offshore Non-KPO',
-        marker_color='#9467bd',
-        legendgroup='offshore'
-    ))
-    
-    fig.update_layout(
-        title=title,
-        xaxis_title='Quarter',
-        yaxis_title='Count',
-        height=500,
-        barmode='group',
-        hovermode='x unified',
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
-    )
-    
-    return fig
-
-
-def plot_hc_vs_fte(hc_data: List[Dict], fte_data: List[Dict]):
-    """Compare HC vs FTE across quarters."""
-    quarters = []
-    hc_totals = []
-    fte_totals = []
-    
-    for i, hc_quarter in enumerate(hc_data):
-        if i < len(fte_data):
-            hc_metrics = hc_quarter.get('metrics', {})
-            fte_metrics = fte_data[i].get('metrics', {})
-            
-            if not hc_metrics or not fte_metrics:
-                continue
-            
-            quarter = f"{hc_quarter['fiscal_year']} {hc_quarter['quarter']}"
-            quarters.append(quarter)
-            hc_totals.append(hc_metrics.get('total_billable_hc', {}).get('total', 0))
-            fte_totals.append(fte_metrics.get('total_billable_fte', {}).get('total', 0))
-    
-    fig = go.Figure()
-    
-    fig.add_trace(go.Bar(
-        x=quarters,
-        y=hc_totals,
-        name='Headcount (HC)',
-        marker_color='#1f77b4'
-    ))
-    
-    fig.add_trace(go.Bar(
-        x=quarters,
-        y=fte_totals,
-        name='Full-Time Equivalent (FTE)',
-        marker_color='#ff7f0e'
-    ))
-    
-    fig.update_layout(
-        title='HC vs FTE Comparison',
-        xaxis_title='Quarter',
-        yaxis_title='Count',
-        height=500,
-        barmode='group',
-        hovermode='x unified'
-    )
-    
-    return fig
-
-
 def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
     """Display key metrics in card format."""
     metrics = quarter_data.get('metrics', {})
@@ -568,14 +175,6 @@ def display_metrics_cards(quarter_data: Dict, metric_type: str = 'hc'):
             value=f"{non_kpo:,.2f}",
             delta=f"{non_kpo_pct:.1f}%"
         )
-    
-    # Debug: Show what values were extracted
-    with st.expander("📊 Debug: Metric Values"):
-        st.write(f"**Total**: {total}")
-        st.write(f"**KPO**: {kpo}")
-        st.write(f"**Non-KPO**: {non_kpo}")
-        st.write(f"**KPO + Non-KPO Sum**: {kpo + non_kpo}")
-        st.write(f"**Difference (Total - Sum)**: {total - (kpo + non_kpo)}")
     
     st.markdown("---")
     
@@ -787,7 +386,6 @@ def create_fulfillment_location_business_dataframe(data: List[Dict], location: s
             total_demands = metrics.get(location_key, {}).get('by_business', {}).get(business, 0)
             
             # Calculate filled and open for this location (proportional distribution)
-            # We'll use the overall business totals as reference
             business_total = metrics.get('total_demands', {}).get('by_business', {}).get(business, 0)
             business_filled = metrics.get('filled_demands', {}).get('by_business', {}).get(business, 0)
             business_open = metrics.get('open_demands', {}).get('by_business', {}).get(business, 0)
@@ -814,105 +412,6 @@ def create_fulfillment_location_business_dataframe(data: List[Dict], location: s
             })
     
     return pd.DataFrame(records)
-
-
-def plot_fulfillment_trends(df: pd.DataFrame):
-    """Create fulfillment trends chart."""
-    fig = go.Figure()
-    
-    colors = {
-        'Total': '#1f77b4',
-        'Filled': '#2ca02c',
-        'Open': '#ff7f0e',
-        'Cancelled': '#d62728',
-        'Expired': '#9467bd'
-    }
-    
-    for column in ['Total', 'Filled', 'Open', 'Cancelled', 'Expired']:
-        fig.add_trace(go.Scatter(
-            x=df['Quarter'],
-            y=df[column],
-            name=column,
-            mode='lines+markers',
-            line=dict(width=3, color=colors[column]),
-            marker=dict(size=10)
-        ))
-    
-    fig.update_layout(
-        title='Fulfillment Trends Across Quarters',
-        xaxis_title='Quarter',
-        yaxis_title='Demand Count',
-        hovermode='x unified',
-        height=500,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
-    )
-    
-    return fig
-
-
-def plot_fulfillment_rate(df: pd.DataFrame):
-    """Create fulfillment rate chart."""
-    fig = go.Figure()
-    
-    fig.add_trace(go.Scatter(
-        x=df['Quarter'],
-        y=df['Fulfillment_Rate'],
-        mode='lines+markers',
-        line=dict(width=3, color='#2ca02c'),
-        marker=dict(size=12),
-        fill='tozeroy',
-        fillcolor='rgba(44, 160, 44, 0.2)'
-    ))
-    
-    fig.update_layout(
-        title='Fulfillment Rate Over Quarters',
-        xaxis_title='Quarter',
-        yaxis_title='Fulfillment Rate (%)',
-        height=400,
-        hovermode='x'
-    )
-    
-    return fig
-
-
-def plot_fulfillment_business_breakdown(df: pd.DataFrame, quarter: str):
-    """Create business comparison for fulfillment."""
-    quarter_data = df[df['Quarter'] == quarter].sort_values('Fulfillment_Rate', ascending=True)
-    
-    fig = go.Figure()
-    
-    fig.add_trace(go.Bar(
-        y=quarter_data['Business'],
-        x=quarter_data['Filled'],
-        name='Filled',
-        orientation='h',
-        marker_color='#2ca02c'
-    ))
-    
-    fig.add_trace(go.Bar(
-        y=quarter_data['Business'],
-        x=quarter_data['Open'],
-        name='Open',
-        orientation='h',
-        marker_color='#ff7f0e'
-    ))
-    
-    fig.update_layout(
-        title=f'Fulfillment by Business - {quarter}',
-        xaxis_title='Count',
-        yaxis_title='Business',
-        height=400,
-        barmode='stack',
-        hovermode='y unified'
-    )
-    
-    return fig
 
 
 def display_fulfillment_metrics_cards(quarter_data: Dict):
@@ -982,9 +481,9 @@ def main():
     """Main Streamlit app."""
     
     # Title and description
-    st.title("📊 COO Dashboard - Workforce Metrics Analytics")
+    st.title("📊 COO Dashboard - Workforce Metrics Analytics (Tables Only)")
     st.markdown("""
-    Comprehensive analytics dashboard for Billable Headcount (HC) and Full-Time Equivalent (FTE) metrics across quarters and business units.
+    Comprehensive data tables for Billable Headcount (HC) and Full-Time Equivalent (FTE) metrics across quarters and business units.
     """)
     
     # Sidebar
@@ -1089,9 +588,6 @@ def main():
     if metric_type == 'HC vs FTE Comparison':
         st.header("🔄 HC vs FTE Comparison Analysis")
         
-        # HC vs FTE chart
-        st.plotly_chart(plot_hc_vs_fte(hc_data, fte_data), use_container_width=True)
-        
         # Comparison table
         st.subheader("📋 Detailed Comparison Table")
         
@@ -1121,6 +617,16 @@ def main():
         comparison_df = pd.DataFrame(comparison_records)
         st.dataframe(comparison_df, use_container_width=True, hide_index=True)
         
+        # Download button
+        csv_comparison = comparison_df.to_csv(index=False)
+        st.download_button(
+            label="📥 Download HC vs FTE Comparison as CSV",
+            data=csv_comparison,
+            file_name="hc_vs_fte_comparison.csv",
+            mime="text/csv",
+            key="download_hc_vs_fte"
+        )
+        
     elif metric_type in ['Headcount (HC)', 'Full-Time Equivalent (FTE)']:
         # Display metrics for selected quarter
         st.header(f"📊 {label} Metrics - {selected_quarter}")
@@ -1130,62 +636,6 @@ def main():
         
         # Growth metrics
         display_growth_metrics(data, metric_key)
-        
-        st.markdown("---")
-        
-        # Trend analysis
-        st.header("📈 Trend Analysis")
-        
-        df_quarters = create_quarter_dataframe(data, metric_key)
-        st.plotly_chart(
-            plot_quarter_trends(df_quarters, f'{label} Trends Across Quarters', label),
-            use_container_width=True
-        )
-        
-        # Three column layout for KPO analysis
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.plotly_chart(plot_kpo_percentage(data, metric_key), use_container_width=True)
-        
-        with col2:
-            st.plotly_chart(plot_kpo_non_kpo_breakdown(data, metric_key), use_container_width=True)
-        
-        with col3:
-            st.plotly_chart(
-                plot_onsite_offshore_distribution(df_quarters, 'Onsite vs Offshore Distribution'),
-                use_container_width=True
-            )
-        
-        # Full width chart for location KPO breakdown
-        st.markdown("### 🌍 Location & KPO/Non-KPO Breakdown")
-        st.plotly_chart(
-            plot_location_kpo_breakdown(df_quarters, 'KPO/Non-KPO Distribution by Location'),
-            use_container_width=True
-        )
-        
-        st.markdown("---")
-        
-        # Business breakdown
-        st.header("🏢 Business Unit Analysis")
-        
-        df_business = create_business_dataframe(data, metric_key)
-        
-        if selected_business != 'All':
-            df_business = df_business[df_business['Business'] == selected_business]
-        
-        # Stacked bar chart
-        st.plotly_chart(
-            plot_business_breakdown(df_business, f'{label} by Business Unit', label),
-            use_container_width=True
-        )
-        
-        # Business comparison for selected quarter
-        st.subheader(f"Business Comparison - {selected_quarter}")
-        st.plotly_chart(
-            plot_business_comparison(df_business, selected_quarter, f'Business Units Ranked by {label}'),
-            use_container_width=True
-        )
         
         st.markdown("---")
         
@@ -1382,36 +832,27 @@ def main():
         
         st.markdown("---")
         
-        # Fulfillment trends
-        st.header("📈 Fulfillment Trend Analysis")
+        # Fulfillment summary table
+        st.subheader("📋 Fulfillment Trends Table")
         df_fulfillment = create_fulfillment_dataframe(fulfillment_data)
-        st.plotly_chart(plot_fulfillment_trends(df_fulfillment), use_container_width=True)
         
-        # Two column layout
-        col1, col2 = st.columns(2)
+        st.dataframe(df_fulfillment.style.format({
+            'Total': '{:.0f}',
+            'Filled': '{:.0f}',
+            'Open': '{:.0f}',
+            'Cancelled': '{:.0f}',
+            'Expired': '{:.0f}',
+            'Fulfillment_Rate': '{:.2f}%'
+        }), use_container_width=True)
         
-        with col1:
-            st.plotly_chart(plot_fulfillment_rate(df_fulfillment), use_container_width=True)
-        
-        with col2:
-            # Status distribution pie chart
-            metrics = selected_quarter_data['metrics']
-            fig_pie = go.Figure(data=[go.Pie(
-                labels=['Filled', 'Open', 'Cancelled', 'Expired'],
-                values=[
-                    metrics['filled_demands']['total'],
-                    metrics['open_demands']['total'],
-                    metrics['cancelled_demands']['total'],
-                    metrics['expired_demands']['total']
-                ],
-                hole=0.4,
-                marker=dict(colors=['#2ca02c', '#ff7f0e', '#d62728', '#9467bd'])
-            )])
-            fig_pie.update_layout(
-                title=f'Demand Status Distribution - {selected_quarter}',
-                height=400
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
+        csv_fulfillment = df_fulfillment.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Fulfillment Trends as CSV",
+            data=csv_fulfillment,
+            file_name="fulfillment_trends.csv",
+            mime="text/csv",
+            key="download_fulfillment_trends"
+        )
         
         st.markdown("---")
         
@@ -1422,39 +863,22 @@ def main():
         if selected_business != 'All':
             df_business_fulfillment = df_business_fulfillment[df_business_fulfillment['Business'] == selected_business]
         
-        st.plotly_chart(
-            plot_fulfillment_business_breakdown(df_business_fulfillment, selected_quarter),
-            use_container_width=True
+        st.subheader("Fulfillment Metrics by Business")
+        st.dataframe(df_business_fulfillment.style.format({
+            'Total': '{:.0f}',
+            'Filled': '{:.0f}',
+            'Open': '{:.0f}',
+            'Fulfillment_Rate': '{:.2f}%'
+        }), use_container_width=True)
+        
+        csv_business = df_business_fulfillment.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Business Fulfillment as CSV",
+            data=csv_business,
+            file_name="fulfillment_by_business.csv",
+            mime="text/csv",
+            key="download_business_fulfillment"
         )
-        
-        # Fulfillment rate comparison
-        st.subheader(f"Fulfillment Rate by Business - {selected_quarter}")
-        quarter_business_data = df_business_fulfillment[df_business_fulfillment['Quarter'] == selected_quarter].sort_values('Fulfillment_Rate', ascending=False)
-        
-        fig_rate = go.Figure(go.Bar(
-            x=quarter_business_data['Business'],
-            y=quarter_business_data['Fulfillment_Rate'],
-            marker=dict(
-                color=quarter_business_data['Fulfillment_Rate'],
-                colorscale='RdYlGn',
-                showscale=True,
-                cmin=0,
-                cmax=100
-            ),
-            text=quarter_business_data['Fulfillment_Rate'].round(1),
-            texttemplate='%{text}%',
-            textposition='auto',
-        ))
-        
-        fig_rate.update_layout(
-            title='Fulfillment Rate by Business',
-            xaxis_title='Business',
-            yaxis_title='Fulfillment Rate (%)',
-            height=400,
-            showlegend=False
-        )
-        
-        st.plotly_chart(fig_rate, use_container_width=True)
         
         st.markdown("---")
         
@@ -1506,12 +930,6 @@ def main():
                         # Fallback to TIME business if kpo_demands not available
                         if metric_col == 'Total':
                             kpo_val = quarter_data['metrics']['total_demands']['by_business'].get('TIME', 0)
-                        elif metric_col == 'Filled':
-                            kpo_val = quarter_data['metrics']['filled_demands']['by_business'].get('TIME', 0)
-                        elif metric_col == 'Open':
-                            kpo_val = quarter_data['metrics']['open_demands']['by_business'].get('TIME', 0)
-                        elif metric_col == 'Fulfillment_Rate':
-                            kpo_val = quarter_data['metrics']['fulfillment_rate']['by_business'].get('TIME', 0)
                         else:
                             kpo_val = 0
                     kpo_row[quarter] = kpo_val
@@ -1745,7 +1163,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 20px;'>
-        <p>COO Dashboard - Workforce Metrics Analytics</p>
+        <p>COO Dashboard - Workforce Metrics Analytics (Tables Only)</p>
         <p>Built with Streamlit • Data updated: {}</p>
     </div>
     """.format(data[0]['extraction_date']), unsafe_allow_html=True)
