@@ -1,5 +1,5 @@
 """
-COO Dashboard - Billable HC & FTE Metrics (Tables Only)
+COO Dashboard - Billable HC & FTE Metrics  
 A simplified Streamlit app focused on data tables without charts
 """
 import streamlit as st
@@ -481,7 +481,7 @@ def main():
     """Main Streamlit app."""
     
     # Title and description
-    st.title("📊 COO Dashboard - Workforce Metrics Analytics (Tables Only)")
+    st.title("📊 COO Dashboard - Workforce Metrics Analytics  ")
     st.markdown("""
     Comprehensive data tables for Billable Headcount (HC) and Full-Time Equivalent (FTE) metrics across quarters and business units.
     """)
@@ -628,19 +628,8 @@ def main():
         )
         
     elif metric_type in ['Headcount (HC)', 'Full-Time Equivalent (FTE)']:
-        # Display metrics for selected quarter
-        st.header(f"📊 {label} Metrics - {selected_quarter}")
-        display_metrics_cards(selected_quarter_data, metric_key)
-        
-        st.markdown("---")
-        
-        # Growth metrics
-        display_growth_metrics(data, metric_key)
-        
-        st.markdown("---")
-        
         # Detailed data tables
-        st.header("📋 Detailed Data Tables by Business Unit")
+        st.header("📋 Data Tables by Business Unit")
         st.markdown("Comprehensive breakdown showing Overall, Onsite, and Offshore metrics across all business units")
         
         # Create dataframes for all three categories
@@ -825,10 +814,6 @@ def main():
     
     if metric_type == 'Fulfillment Metrics' and fulfillment_data:
         st.header("📊 Fulfillment Metrics - Demand & Resource Allocation")
-        
-        # Use selected_quarter_data from sidebar selection above
-        # Display metrics cards
-        display_fulfillment_metrics_cards(selected_quarter_data)
         
         st.markdown("---")
         
@@ -1163,7 +1148,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666; padding: 20px;'>
-        <p>COO Dashboard - Workforce Metrics Analytics (Tables Only)</p>
+        <p>COO Dashboard - Workforce Metrics Analytics  </p>
         <p>Built with Streamlit • Data updated: {}</p>
     </div>
     """.format(data[0]['extraction_date']), unsafe_allow_html=True)
