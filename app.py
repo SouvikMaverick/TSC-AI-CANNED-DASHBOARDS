@@ -383,20 +383,12 @@ def create_fulfillment_location_business_dataframe(data: List[Dict], location: s
         location_key = 'onsite_demands' if location == 'onsite' else 'offshore_demands'
         
         for business in businesses:
+            # Get actual total demands by business for this location
             total_demands = metrics.get(location_key, {}).get('by_business', {}).get(business, 0)
             
-            # Calculate filled and open for this location (proportional distribution)
-            business_total = metrics.get('total_demands', {}).get('by_business', {}).get(business, 0)
-            business_filled = metrics.get('filled_demands', {}).get('by_business', {}).get(business, 0)
-            business_open = metrics.get('open_demands', {}).get('by_business', {}).get(business, 0)
-            
-            # Proportional calculation
-            if business_total > 0:
-                location_filled = int(business_filled * (total_demands / business_total))
-                location_open = int(business_open * (total_demands / business_total))
-            else:
-                location_filled = 0
-                location_open = 0
+            # Get actual filled and open demands by business for this location
+            location_filled = metrics.get(location_key, {}).get('filled_by_business', {}).get(business, 0)
+            location_open = metrics.get(location_key, {}).get('open_by_business', {}).get(business, 0)
             
             # Calculate fulfillment rate
             actionable = location_filled + location_open
@@ -871,7 +863,7 @@ def main():
         st.header("📋 Detailed Fulfillment Data by Business Unit")
         
         # Create pivot tables for different metrics
-        def create_fulfillment_pivot(df, metric_col, title, fulfillment_data_source):
+        def create_fulfillment_pivot(df, metric_col, title, fulfillment_data_source, location_type='overall'):
             pivot = df.pivot(index='Business', columns='Quarter', values=metric_col)
             
             # Add QTD column
@@ -889,35 +881,34 @@ def main():
                 else:
                     vrtu_row[col] = pivot[col].sum()
             
-            # 2. KPO - KPO numbers for each quarter
+            # 2. KPO - KPO numbers for each quarter (only for overall, not onsite)
             kpo_row = {}
-            for quarter_data in fulfillment_data_source:
-                quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
-                if quarter in pivot.columns:
-                    # Check if kpo_demands exists in the data
-                    if 'kpo_demands' in quarter_data['metrics']:
-                        # Extract KPO value based on metric type
-                        if metric_col == 'Total':
-                            kpo_val = quarter_data['metrics']['kpo_demands']['total']
-                        elif metric_col == 'Filled':
-                            kpo_val = quarter_data['metrics']['kpo_demands']['filled']
-                        elif metric_col == 'Open':
-                            kpo_val = quarter_data['metrics']['kpo_demands']['open']
-                        elif metric_col == 'Fulfillment_Rate':
-                            # Calculate KPO fulfillment rate
-                            kpo_filled = quarter_data['metrics']['kpo_demands']['filled']
-                            kpo_open = quarter_data['metrics']['kpo_demands']['open']
-                            kpo_actionable = kpo_filled + kpo_open
-                            kpo_val = (kpo_filled / kpo_actionable * 100) if kpo_actionable > 0 else 0
-                        else:
-                            kpo_val = 0
-                    else:
-                        # Fallback to TIME business if kpo_demands not available
-                        if metric_col == 'Total':
-                            kpo_val = quarter_data['metrics']['total_demands']['by_business'].get('TIME', 0)
-                        else:
-                            kpo_val = 0
-                    kpo_row[quarter] = kpo_val
+            if location_type == 'onsite':
+                # For onsite, don't show KPO data - set all to 0
+                for col in pivot.columns:
+                    kpo_row[col] = 0
+            else:
+                for quarter_data in fulfillment_data_source:
+                    quarter = f"{quarter_data['fiscal_year']} {quarter_data['quarter']}"
+                    if quarter in pivot.columns:
+                        kpo_val = 0
+                        
+                        # Use overall kpo_demands for overall tables
+                        if 'kpo_demands' in quarter_data['metrics']:
+                            if metric_col == 'Total':
+                                kpo_val = quarter_data['metrics']['kpo_demands']['total']
+                            elif metric_col == 'Filled':
+                                kpo_val = quarter_data['metrics']['kpo_demands']['filled']
+                            elif metric_col == 'Open':
+                                kpo_val = quarter_data['metrics']['kpo_demands']['open']
+                            elif metric_col == 'Fulfillment_Rate':
+                                # Calculate KPO fulfillment rate
+                                kpo_filled = quarter_data['metrics']['kpo_demands']['filled']
+                                kpo_open = quarter_data['metrics']['kpo_demands']['open']
+                                kpo_actionable = kpo_filled + kpo_open
+                                kpo_val = (kpo_filled / kpo_actionable * 100) if kpo_actionable > 0 else 0
+                        
+                        kpo_row[quarter] = kpo_val
             
             # Calculate KPO QTD
             kpo_quarters = [q for q in pivot.columns if q != 'QTD']
@@ -1040,7 +1031,7 @@ def main():
         
         # Onsite Total Demands
         st.subheader("📊 Onsite Total Demands by Business")
-        pivot_onsite_total = create_fulfillment_pivot(df_business_onsite, 'Total', 'Onsite Total Demands', fulfillment_data)
+        pivot_onsite_total = create_fulfillment_pivot(df_business_onsite, 'Total', 'Onsite Total Demands', fulfillment_data, 'onsite')
         styled_onsite_total = pivot_onsite_total.style.format("{:.0f}")
         styled_onsite_total = styled_onsite_total.apply(lambda x: highlight_fulfillment_table(pivot_onsite_total), axis=None)
         st.dataframe(styled_onsite_total, use_container_width=True)
@@ -1057,7 +1048,7 @@ def main():
         # Onsite Filled Demands
         st.markdown("---")
         st.subheader("✅ Onsite Filled Demands by Business")
-        pivot_onsite_filled = create_fulfillment_pivot(df_business_onsite, 'Filled', 'Onsite Filled Demands', fulfillment_data)
+        pivot_onsite_filled = create_fulfillment_pivot(df_business_onsite, 'Filled', 'Onsite Filled Demands', fulfillment_data, 'onsite')
         styled_onsite_filled = pivot_onsite_filled.style.format("{:.0f}")
         styled_onsite_filled = styled_onsite_filled.apply(lambda x: highlight_fulfillment_table(pivot_onsite_filled), axis=None)
         st.dataframe(styled_onsite_filled, use_container_width=True)
@@ -1074,7 +1065,7 @@ def main():
         # Onsite Open Demands
         st.markdown("---")
         st.subheader("⏳ Onsite Open Demands by Business")
-        pivot_onsite_open = create_fulfillment_pivot(df_business_onsite, 'Open', 'Onsite Open Demands', fulfillment_data)
+        pivot_onsite_open = create_fulfillment_pivot(df_business_onsite, 'Open', 'Onsite Open Demands', fulfillment_data, 'onsite')
         styled_onsite_open = pivot_onsite_open.style.format("{:.0f}")
         styled_onsite_open = styled_onsite_open.apply(lambda x: highlight_fulfillment_table(pivot_onsite_open), axis=None)
         st.dataframe(styled_onsite_open, use_container_width=True)
